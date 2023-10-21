@@ -1,17 +1,18 @@
 import core
 
-link = 'https://www.youtube.com/playlist?list=PLSAUJHk8Limn1LuB8cgdPopFDG36px-Gg'
+link = 'https://www.youtube.com/playlist?list=PLp7hnLHxd1KHrp5YZtbQXp2cRS3UGsnQS'
 
 channel = 'youtube'
-folder = './cache/'
-route = 'https://www.youtube.com/watch?v='
+folder = './PLp7hnLHxd1KHrp5YZtbQXp2cRS3UGsnQS/'
 
 reptile = core.Reptile(channel=channel, folder=folder)
 inventory = reptile.getInventory(link=link)
-print(f'Get {len(inventory)} inventory.')
 
-link = [f'{route}{i}' for i in inventory[:16]]
-thread = 4
-pipe = core.Pipe(link=link, channel=channel)
-pipe.makeVideo(folder=folder, thread=thread)
+thread = 8
+pipe = core.Pipe(
+    inventory=inventory, 
+    channel=channel, 
+    folder=folder
+)
+pipe.makeVideo(thread=thread)
 

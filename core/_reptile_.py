@@ -31,7 +31,7 @@ class Reptile:
                 inventory = [_.replace("\n", "") for _ in inventory]
                 record.close()
                 return(inventory)
-            driver = self.getDriver()
+            driver = self.getDriver(display=False)
             driver.get(link)
             time.sleep(3)
             script = 'document.documentElement.scrollHeight'

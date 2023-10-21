@@ -5,6 +5,8 @@ import time
 import PIL.Image
 import math 
 import multiprocessing
+import functools
+import tqdm
 
 def getFace(image):
     prediction = face_recognition.face_locations(image)
@@ -19,13 +21,13 @@ def getFace(image):
     face = box, status
     return(face)
 
-def makeFragment(path):
+def makeFragment(path, head=0, tail=1):
     print(f'Read {path} and make fragment.')
     video = moviepy.editor.VideoFileClip(path)
     width, height = video.size
     length = int(video.duration)
     for moment in range(length):
-        if(moment<(length*0.1) or moment>(length*0.9)): continue
+        if(moment<(length*head) or moment>(length*tail)): continue
         second = [moment, moment+1]
         image = [video.get_frame(second[0]), video.get_frame(second[1])]
         face = [getFace(i) for i in image]
@@ -69,31 +71,35 @@ def makeFragment(path):
 
 class Detection:
 
-    def __init__(self, folder):
+    def __init__(self, folder, head, tail):
         self.folder = folder
+        self.head = head
+        self.tail = tail
         return    
     
     def getIteration(self):
         iteration = []
-        for index in os.listdir(self.folder):
-            item = os.path.join(self.folder, index)
-            status = os.path.isdir(item)
-            if(not status): continue
-            item = f'{item}/video.mp4'
-            status = os.path.isfile(item)
-            if(not status): continue
+        for tag in os.listdir(self.folder):
+            item = os.path.join(self.folder, tag, 'video.mp4')
+            here = os.path.isfile(item)
+            if(not here): continue
             iteration += [item]
             continue
-        length = len(iteration)
-        print(f'The iteration size is {length}.')
         return(iteration)
     
-    def makeFragment(self, thread=4):
+    def makeFragment(self, thread=1):
         iteration = self.getIteration()
-        process = multiprocessing.Pool(processes=thread)
-        _ = process.map(makeFragment, iteration)
-        process.close()
-
-# folder = './cache/'
-# detection = Detection(folder=folder)
-# detection.makeFragment(thread=4)
+        if(thread<=1):
+            for item in tqdm.tqdm(iteration, leave=False):
+                makeFragment(path=item, head=self.head, tail=self.tail)
+                continue
+            pass
+        else:
+            process = multiprocessing.Pool(processes=thread)
+            function = functools.partial(makeFragment, head=self.head, tail=self.tail)
+            _ = process.map(function, iteration)
+            process.close()
+            pass
+        return
+    
+    pass

@@ -1,10 +1,14 @@
+import tqdm
 import yt_dlp
 import multiprocessing
 import functools
+import os
 
 def makeVideo(link, channel, folder):
     if(channel=='youtube'):
         identity = link.split('?')[-1].split('=')[-1].split("&")[0]
+        here = os.path.isfile(f'{folder}/{identity}/video.mp4')
+        if(here): return
         option = {
             'quiet': True,
             'verbose': False,
@@ -20,22 +24,43 @@ def makeVideo(link, channel, folder):
 
 class Pipe:
 
-    def __init__(self, link, channel):
-        self.link = link
+    def __init__(self, inventory, channel, folder):
+        self.inventory = inventory
         self.channel = channel
+        self.folder = folder
         return
 
-    def makeVideo(self, folder, thread=1):
+    def getIteration(self):
         if(self.channel=='youtube'):
-            process = multiprocessing.Pool(processes=thread)
-            function = functools.partial(
-                makeVideo, 
-                channel=self.channel, 
-                folder=folder
-            )
-            _ = process.map(function, self.link)
+            route = 'https://www.youtube.com/watch?v='
+            iteration = [f'{route}{i}' for i in self.inventory]
             pass
-        process.close()
+        return(iteration)
+    
+    def makeVideo(self, thread=1):
+        if(self.channel=='youtube'):
+            iteration = self.getIteration()
+            if(thread<=1):
+                for number, item in enumerate(iteration, start=1):
+                    print(f"|{number}/{len(iteration)}|")
+                    makeVideo(
+                        link=item, 
+                        channel=self.channel, 
+                        folder=self.folder
+                    )
+                    continue
+                pass
+            else:
+                process = multiprocessing.Pool(processes=thread)
+                function = functools.partial(
+                    makeVideo, 
+                    channel=self.channel, 
+                    folder=self.folder
+                )
+                _ = process.map(function, iteration)
+                process.close()
+                pass
+            pass
         return
 
     pass
