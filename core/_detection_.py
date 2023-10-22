@@ -8,6 +8,7 @@ import functools
 import dlib
 import tqdm
 import face_recognition
+import pathlib
 
 def getFace(image):
     prediction = face_recognition.face_locations(image)
@@ -24,6 +25,8 @@ def getFace(image):
 
 
 def makeFragment(path, head=0, tail=1):
+    invoice = path.replace('video.mp4', 'fragment.txt')
+    if(os.path.isfile(invoice)): return
     print(f'Make {path} fragment.')
     video = moviepy.editor.VideoFileClip(path)
     width, height = video.size
@@ -71,7 +74,7 @@ def makeFragment(path, head=0, tail=1):
         continue
     time.sleep(1)
     video.close()
-    os.remove(path)
+    pathlib.Path(invoice).touch()
     return
 
 class Detection:
