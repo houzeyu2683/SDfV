@@ -1,6 +1,8 @@
 import core
 
-folder = './PLp7hnLHxd1KHrp5YZtbQXp2cRS3UGsnQS/'
-detection = core.Detection(folder=folder)
+folder = './【年代新聞】2023年01-03月/'
+head = 0.01
+tail = 0.8
 
-detection.makeFragment(thread=2)
+detection = core.Detection(folder=folder, head=head, tail=tail)
+detection.makeFragment(thread=1)

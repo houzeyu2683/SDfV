@@ -1,57 +1,75 @@
 import os
 import moviepy.editor
-import face_recognition
 import time
 import PIL.Image
 import math 
 import multiprocessing
 import functools
-import tqdm
+import numpy
+# import tqdm
+import face_recognition
+import pathlib
 
-def getFace(image):
-    prediction = face_recognition.face_locations(image)
-    if(len(prediction)!=1):
-        box, status = None, False
-        pass
-    else:
-        box, status = prediction[0], True
-        top, right, bottom, left = box
-        box = left, top, right, bottom
-        pass
-    face = box, status
-    return(face)
+class Recognition:
+
+    def __init__(self, image):
+        self.image = image
+        return
+    
+    def makePrediction(self):
+        prediction = face_recognition.face_locations(self.image)
+        self.prediction = prediction
+
+    def getStatus(self):
+        length = len(self.prediction)
+        status = False if(length!=1) else True
+        return(status)
+    
+    def getBox(self):
+        length = len(self.prediction)
+        box = None
+        if(length==1):
+            item = self.prediction[0]
+            top, right, bottom, left = item
+            box = left, top, right, bottom
+            pass
+        return(box)
+
+    def getCenter(self):
+        box = self.getBox()
+        center = [(box[0]+box[2])/2, (box[1]+box[3])/2]
+        return(center)
+
+    pass
 
 def makeFragment(path, head=0, tail=1):
-    print(f'Read {path} and make fragment.')
+    invoice = path.replace('video.mp4', 'fragment.txt')
+    if(os.path.isfile(invoice)): return
+    print(f'Make [{path}] fragment.')
     video = moviepy.editor.VideoFileClip(path)
     width, height = video.size
     length = int(video.duration)
-    for moment in range(length):
+    loop = enumerate(range(length), start=1)
+    # progress = tqdm.tqdm(loop, total=length, leave=False)
+    for _, moment in loop:
         if(moment<(length*head) or moment>(length*tail)): continue
-        second = [moment, moment+1]
-        image = [video.get_frame(second[0]), video.get_frame(second[1])]
-        face = [getFace(i) for i in image]
-        box = [face[0][0], face[1][0]]
-        status = [face[0][1], face[1][1]]
-        if(sum(status)!=2): continue
-        lock = video.subclip(second[0], second[1])
-        limit = max(box[0][2] - box[0][0], box[0][3] - box[0][1])
-        area = (box[0][2] - box[0][0]) * (box[0][3] - box[0][1])
-        center = []
-        for b in box:
-            c = [(b[0]+b[2])/2, (b[1]+b[3])/2]
-            center += [c]
-            continue
-        delta = []
-        delta += [abs(center[0][0] - center[1][0])]
-        delta += [abs(center[0][1] - center[1][1])]
-        delta = sum(delta)
+        one = Recognition(video.get_frame(moment))
+        two = Recognition(video.get_frame(moment+1))
+        one.makePrediction()
+        two.makePrediction()
+        if(sum([one.getStatus()+two.getStatus()])!=2): continue
+        lock = video.subclip(moment, moment+1)
+        box = one.getBox()
+        limit = max(box[2] - box[0], box[3] - box[1])
+        area = (box[2] - box[0]) * (box[3] - box[1])
+        center = numpy.array([one.getCenter(), two.getCenter()])
+        delta = abs((center[0,:]-center[1,:])).sum()
         if(area<=96*96 or delta>math.sqrt(area)): continue 
         fragment = lock.crop(
-            x1=max(0, box[0][0]-limit),
-            y1=max(0, box[0][1]-limit),
-            x2=min(width, box[0][2]+limit),
-            y2=min(height, box[0][3]+limit)
+            x1=max(0, box[0]-limit),
+            y1=max(0, box[1]-limit),
+            x2=min(width, box[2]+limit),
+            y2=min(height, box[3]+limit)
         )
         shot = PIL.Image.fromarray(fragment.get_frame(0))
         time.sleep(1)
@@ -64,9 +82,9 @@ def makeFragment(path, head=0, tail=1):
         )
         shot.save(f'{tag}.jpg')
         continue
+    pathlib.Path(invoice).touch()
     time.sleep(1)
     video.close()
-    os.remove(path)
     return
 
 class Detection:
@@ -90,16 +108,23 @@ class Detection:
     def makeFragment(self, thread=1):
         iteration = self.getIteration()
         if(thread<=1):
-            for item in tqdm.tqdm(iteration, leave=False):
+            length = len(iteration)
+            for number, item in enumerate(iteration, start=1):
+                print(f"|{number}/{length}|")
                 makeFragment(path=item, head=self.head, tail=self.tail)
                 continue
             pass
         else:
-            process = multiprocessing.Pool(processes=thread)
-            function = functools.partial(makeFragment, head=self.head, tail=self.tail)
-            _ = process.map(function, iteration)
-            process.close()
+            assert thread<multiprocessing.cpu_count()
+            function = functools.partial(
+                makeFragment, 
+                head=self.head, 
+                tail=self.tail
+            )
+            pool = multiprocessing.Pool(thread)
+            pool.map(function, iteration)
             pass
+        print('Finish the process for fragment.')
         return
     
     pass
