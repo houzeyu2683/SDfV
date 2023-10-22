@@ -1,7 +1,6 @@
 import selenium.webdriver
 import chromedriver_autoinstaller
 import time
-import tqdm
 import os
 import string
 
@@ -45,7 +44,7 @@ class Reptile:
                 else: height=update
                 continue
             iteration = driver.find_elements('id', "video-title")
-            for item in tqdm.tqdm(iteration):
+            for item in iteration:
                 content = item.get_attribute('href')
                 identity = content.split('?v=')[-1].split('&')[0]
                 if(content): inventory += [identity]
