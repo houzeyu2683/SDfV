@@ -6,7 +6,7 @@ import math
 import multiprocessing
 import functools
 import numpy
-import tqdm
+# import tqdm
 import face_recognition
 import pathlib
 
@@ -50,8 +50,8 @@ def makeFragment(path, head=0, tail=1):
     width, height = video.size
     length = int(video.duration)
     loop = enumerate(range(length), start=1)
-    progress = tqdm.tqdm(loop, total=length, leave=False)
-    for _, moment in progress:
+    # progress = tqdm.tqdm(loop, total=length, leave=False)
+    for _, moment in loop:
         if(moment<(length*head) or moment>(length*tail)): continue
         one = Recognition(video.get_frame(moment))
         two = Recognition(video.get_frame(moment+1))
