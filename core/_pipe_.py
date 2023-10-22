@@ -1,4 +1,4 @@
-import tqdm
+import shutil
 import yt_dlp
 import multiprocessing
 import functools
@@ -9,6 +9,8 @@ def makeVideo(link, channel, folder):
         identity = link.split('?')[-1].split('=')[-1].split("&")[0]
         here = os.path.isfile(f'{folder}/{identity}/video.mp4')
         if(here): return
+        history = os.path.isdir(f'{folder}/{identity}/')
+        if(history): shutil.rmtree(f'{folder}/{identity}/')
         option = {
             'quiet': True,
             'verbose': False,
