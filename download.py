@@ -8,7 +8,7 @@ folder = './PLp7hnLHxd1KHrp5YZtbQXp2cRS3UGsnQS/'
 reptile = core.Reptile(channel=channel, folder=folder)
 inventory = reptile.getInventory(link=link)
 
-thread = 8
+thread = 1
 pipe = core.Pipe(
     inventory=inventory, 
     channel=channel, 
