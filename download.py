@@ -1,9 +1,8 @@
 import core
 
-link = 'https://www.youtube.com/playlist?list=PLp7hnLHxd1KHrp5YZtbQXp2cRS3UGsnQS'
-
 channel = 'youtube'
-folder = './PLp7hnLHxd1KHrp5YZtbQXp2cRS3UGsnQS/'
+link = 'https://www.youtube.com/playlist?list=PLbyorRThEk_J4xy8T95K_dtbJBtn0aG_8'
+folder = './【年代新聞】2023年01-03月/'
 
 reptile = core.Reptile(channel=channel, folder=folder)
 inventory = reptile.getInventory(link=link)

@@ -1,12 +1,13 @@
 import os
 import moviepy.editor
-import face_recognition
 import time
 import PIL.Image
 import math 
 import multiprocessing
 import functools
+import dlib
 import tqdm
+import face_recognition
 
 def getFace(image):
     prediction = face_recognition.face_locations(image)
@@ -21,18 +22,22 @@ def getFace(image):
     face = box, status
     return(face)
 
+
 def makeFragment(path, head=0, tail=1):
-    print(f'Read {path} and make fragment.')
+    print(f'Make {path} fragment.')
     video = moviepy.editor.VideoFileClip(path)
     width, height = video.size
     length = int(video.duration)
-    for moment in range(length):
+    loop = enumerate(range(length), start=1)
+    progress = tqdm.tqdm(loop, total=length)
+    for _, moment in progress:
+        # print(f"|{number}/{length}|")
         if(moment<(length*head) or moment>(length*tail)): continue
         second = [moment, moment+1]
-        image = [video.get_frame(second[0]), video.get_frame(second[1])]
-        face = [getFace(i) for i in image]
-        box = [face[0][0], face[1][0]]
-        status = [face[0][1], face[1][1]]
+        image = [video.get_frame(i) for i in second]
+        recognition = [getFace(i) for i in image]
+        box = [recognition[0][0], recognition[1][0]]
+        status = [recognition[0][1], recognition[1][1]]
         if(sum(status)!=2): continue
         lock = video.subclip(second[0], second[1])
         limit = max(box[0][2] - box[0][0], box[0][3] - box[0][1])
@@ -87,19 +92,16 @@ class Detection:
             continue
         return(iteration)
     
-    def makeFragment(self, thread=1):
+    def makeFragment(self):
         iteration = self.getIteration()
-        if(thread<=1):
-            for item in tqdm.tqdm(iteration, leave=False):
-                makeFragment(path=item, head=self.head, tail=self.tail)
-                continue
-            pass
-        else:
-            process = multiprocessing.Pool(processes=thread)
-            function = functools.partial(makeFragment, head=self.head, tail=self.tail)
-            _ = process.map(function, iteration)
-            process.close()
-            pass
+        length = len(iteration)
+        # loop = enumerate(iteration, start=1)
+        # progress = tqdm.tqdm(loop, total=length, leave=False)
+        for number, item in enumerate(iteration, start=1):
+            print(f"|{number}/{length}|")
+            # progress.set_description(f"|{number}/{length}|")
+            makeFragment(path=item, head=self.head, tail=self.tail)
+            continue
         return
     
     pass
