@@ -3,7 +3,7 @@ import yt_dlp
 import multiprocessing
 import functools
 import os
-
+import shutil
 def makeVideo(link, channel, folder):
     if(channel=='youtube'):
         identity = link.split('?')[-1].split('=')[-1].split("&")[0]
@@ -19,7 +19,8 @@ def makeVideo(link, channel, folder):
             "outtmpl": f'{folder}/{identity}/video.mp4'
         }
         process = yt_dlp.YoutubeDL(option)
-        _ = process.download(link)
+        try:_ = process.download(link)
+        except: shutil.rmtree(f'{folder}/{identity}/')
         pass
     process.close()
     return
