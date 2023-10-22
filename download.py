@@ -7,7 +7,7 @@ folder = './test/'
 reptile = core.Reptile(channel=channel, folder=folder)
 inventory = reptile.getInventory(link=link)
 
-thread = 2
+thread = 1
 pipe = core.Pipe(
     inventory=inventory, 
     channel=channel, 
