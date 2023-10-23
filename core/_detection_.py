@@ -108,9 +108,9 @@ class Detection:
     def makeFragment(self, thread=1):
         iteration = self.getIteration()
         if(thread<=1):
-            length = len(iteration)
-            for number, item in enumerate(iteration, start=1):
-                print(f"|{number}/{length}|")
+            # length = len(iteration)
+            for _, item in enumerate(iteration, start=1):
+                # print(f"|{number}/{length}|")
                 makeFragment(path=item, head=self.head, tail=self.tail)
                 continue
             pass
