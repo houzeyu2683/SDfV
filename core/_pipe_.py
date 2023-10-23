@@ -6,6 +6,7 @@ import os
 import shutil
 
 def makeVideo(link, channel, folder):
+    print(f'Make [{link}] video.')
     if(channel=='youtube'):
         identity = link.split('?')[-1].split('=')[-1].split("&")[0]
         here = os.path.isfile(f'{folder}/{identity}/video.mp4')
@@ -44,8 +45,7 @@ class Pipe:
         if(self.channel=='youtube'):
             iteration = self.getIteration()
             if(thread<=1):
-                for number, item in enumerate(iteration, start=1):
-                    print(f"|{number}/{len(iteration)}|")
+                for _, item in enumerate(iteration, start=1):
                     makeVideo(
                         link=item, 
                         channel=self.channel, 
