@@ -6,11 +6,11 @@ import os
 import shutil
 
 def makeVideo(link, channel, folder):
-    print(f'Make [{link}] video.')
     if(channel=='youtube'):
         identity = link.split('?')[-1].split('=')[-1].split("&")[0]
         here = os.path.isfile(f'{folder}/{identity}/video.mp4')
         if(here): return
+        print(f'Make [{link}] video.')
         history = os.path.isdir(f'{folder}/{identity}/')
         if(history): shutil.rmtree(f'{folder}/{identity}/')
         option = {
