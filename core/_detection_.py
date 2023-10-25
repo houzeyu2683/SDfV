@@ -72,6 +72,12 @@ def makeFragment(path, head=0, tail=1):
             y2=min(height, box[3]+limit)
         )
         shot = PIL.Image.fromarray(fragment.get_frame(0))
+        for item in fragment.iter_frames():
+            recognition = Recognition(image=item)
+            recognition.makePrediction()
+            status = recognition.getStatus()
+            if(not status): return
+            continue
         time.sleep(1)
         tag = f'{os.path.dirname(path)}/{moment}'
         fragment.write_videofile(
@@ -108,9 +114,7 @@ class Detection:
     def makeFragment(self, thread=1):
         iteration = self.getIteration()
         if(thread<=1):
-            # length = len(iteration)
             for _, item in enumerate(iteration, start=1):
-                # print(f"|{number}/{length}|")
                 makeFragment(path=item, head=self.head, tail=self.tail)
                 continue
             pass
