@@ -76,8 +76,9 @@ def makeFragment(path, head=0, tail=1):
             recognition = Recognition(image=item)
             recognition.makePrediction()
             status = recognition.getStatus()
-            if(not status): return
+            if(not status): break
             continue
+        if(not status): continue
         time.sleep(1)
         tag = f'{os.path.dirname(path)}/{moment}'
         fragment.write_videofile(
