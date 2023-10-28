@@ -61,7 +61,7 @@ def makeFragment(path, head=0, tail=1):
         area = (box[2] - box[0]) * (box[3] - box[1])
         center = numpy.array([one.getCenter(), two.getCenter()])
         movement = abs((center[0,:]-center[1,:])).sum()
-        if(area<=224*224 or movement>math.sqrt(area)): continue 
+        if(area<=128*128 or movement>math.sqrt(area)): continue 
         fragment = lock.crop(
             x1=max(0, box[0]-limit),
             y1=max(0, box[1]-limit),
