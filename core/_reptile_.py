@@ -21,8 +21,7 @@ class Reptile:
     def getInventory(self, link):
         inventory = []
         if(self.channel=='youtube'):
-            translation = str.maketrans('', '', string.punctuation)
-            path = f'{self.folder}/{link.translate(translation)}.txt'
+            path = f'{self.folder}/inventory.txt'
             here = os.path.exists(path)
             if(here):
                 record = open(path, 'r')

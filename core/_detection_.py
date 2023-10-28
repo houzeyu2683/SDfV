@@ -6,7 +6,6 @@ import math
 import multiprocessing
 import functools
 import numpy
-# import tqdm
 import face_recognition
 import pathlib
 
@@ -43,35 +42,32 @@ class Recognition:
     pass
 
 def makeFragment(path, head=0, tail=1):
-    invoice = path.replace('video.mp4', 'fragment.txt')
-    if(os.path.isfile(invoice)): return
     print(f'Make [{path}] fragment.')
     video = moviepy.editor.VideoFileClip(path)
     width, height = video.size
     length = int(video.duration)
     loop = enumerate(range(length), start=1)
-    # progress = tqdm.tqdm(loop, total=length, leave=False)
     for _, moment in loop:
-        if(moment<(length*head) or moment>(length*tail)): continue
+        if(not (length*head)<moment<(length*tail)): continue
         one = Recognition(video.get_frame(moment))
         two = Recognition(video.get_frame(moment+1))
         one.makePrediction()
         two.makePrediction()
-        if(sum([one.getStatus()+two.getStatus()])!=2): continue
+        count = sum([one.getStatus()+two.getStatus()])
+        if(count!=2): continue
         lock = video.subclip(moment, moment+1)
         box = one.getBox()
         limit = max(box[2] - box[0], box[3] - box[1])
         area = (box[2] - box[0]) * (box[3] - box[1])
         center = numpy.array([one.getCenter(), two.getCenter()])
-        delta = abs((center[0,:]-center[1,:])).sum()
-        if(area<=96*96 or delta>math.sqrt(area)): continue 
+        movement = abs((center[0,:]-center[1,:])).sum()
+        if(area<=224*224 or movement>math.sqrt(area)): continue 
         fragment = lock.crop(
             x1=max(0, box[0]-limit),
             y1=max(0, box[1]-limit),
             x2=min(width, box[2]+limit),
             y2=min(height, box[3]+limit)
         )
-        shot = PIL.Image.fromarray(fragment.get_frame(0))
         for item in fragment.iter_frames():
             recognition = Recognition(image=item)
             recognition.makePrediction()
@@ -81,6 +77,7 @@ def makeFragment(path, head=0, tail=1):
         if(not status): continue
         time.sleep(1)
         tag = f'{os.path.dirname(path)}/{moment}'
+        shot = PIL.Image.fromarray(fragment.get_frame(0))
         fragment.write_videofile(
             f'{tag}.mp4', 
             codec="libx264", 
@@ -89,9 +86,8 @@ def makeFragment(path, head=0, tail=1):
         )
         shot.save(f'{tag}.jpg')
         continue
-    pathlib.Path(invoice).touch()
-    time.sleep(1)
-    video.close()
+    mark = path.replace('video.mp4', 'fragment.txt')
+    pathlib.Path(mark).touch()
     return
 
 class Detection:
@@ -105,22 +101,21 @@ class Detection:
     def getIteration(self):
         iteration = []
         for tag in os.listdir(self.folder):
-            item = os.path.join(self.folder, tag, 'video.mp4')
-            here = os.path.isfile(item)
-            if(not here): continue
+            path = os.path.join(self.folder, tag)
+            existence = os.path.isfile(os.path.join(path, 'video.mp4'))
+            if(not existence): continue
+            completion = os.path.isfile(os.path.join(path, 'fragment.txt'))
+            if(completion): continue
+            item = os.path.join(path, 'video.mp4')
             iteration += [item]
             continue
         return(iteration)
     
     def makeFragment(self, thread=1):
+        assert thread<multiprocessing.cpu_count()
         iteration = self.getIteration()
-        if(thread<=1):
-            for _, item in enumerate(iteration, start=1):
-                makeFragment(path=item, head=self.head, tail=self.tail)
-                continue
-            pass
-        else:
-            assert thread<multiprocessing.cpu_count()
+        stop = False if(iteration!=[]) else True
+        while(not stop):
             function = functools.partial(
                 makeFragment, 
                 head=self.head, 
@@ -128,8 +123,9 @@ class Detection:
             )
             pool = multiprocessing.Pool(thread)
             pool.map(function, iteration)
-            pass
-        print('Finish the process for fragment.')
+            iteration = self.getIteration()
+            stop = True if(iteration==[]) else False
+            continue
         return
     
     pass
