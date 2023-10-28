@@ -9,7 +9,7 @@ if(__name__=='__main__'):
     argument = definition.parse_args()
     #
     folder = argument.folder
-    head = argument.head,
+    head = argument.head
     tail = argument.tail
     thread = argument.thread
     #
