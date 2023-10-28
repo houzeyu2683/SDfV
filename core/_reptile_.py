@@ -2,7 +2,6 @@ import selenium.webdriver
 import chromedriver_autoinstaller
 import time
 import os
-import string
 
 class Reptile:
 
