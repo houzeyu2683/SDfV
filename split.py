@@ -7,10 +7,16 @@ if(__name__=='__main__'):
     definition.add_argument("--tail", default=0.9, type=float)
     definition.add_argument("--thread", default=4, type=int)
     argument = definition.parse_args()
+    #
+    folder = argument.folder
+    head = argument.head,
+    tail = argument.tail
+    thread = argument.thread
+    #
     detection = core.Detection(
-        folder=argument.folder, 
-        head=argument.head, 
-        tail=argument.tail
+        folder=folder,
+        head=head, 
+        tail=tail
     )
-    detection.makeFragment(thread=argument.thread)
+    detection.makeFragment(thread=thread)
     pass

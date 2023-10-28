@@ -12,6 +12,8 @@ if(__name__=='__main__'):
     channel = argument.channel
     link = argument.link
     folder = argument.folder
+    thread = argument.thread
+    #
     reptile = core.Reptile(channel=channel, folder=folder)
     inventory = reptile.getInventory(link=link)
     pipe = core.Pipe(
@@ -19,7 +21,5 @@ if(__name__=='__main__'):
         folder=folder,
         inventory=inventory
     )
-    #
-    thread = argument.thread
     pipe.makeVideo(thread=thread)
     pass
