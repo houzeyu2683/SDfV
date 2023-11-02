@@ -1,4 +1,5 @@
 import os
+import string
 import moviepy.editor
 import time
 import PIL.Image
@@ -82,7 +83,8 @@ def makeFragment(path, head=0, tail=1):
             f'{tag}.mp4', 
             codec="libx264", 
             logger=None, 
-            temp_audiofile=f'{tag}.wav'
+            temp_audiofile=f'{tag}.wav',
+            fps=25
         )
         shot.save(f'{tag}.jpg')
         continue
