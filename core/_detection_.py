@@ -42,13 +42,14 @@ class Recognition:
 
     pass
 
-def makeFragment(path, head=0, tail=1):
+def makeFragment(path, scope):
     print(f'Make [{path}] fragment.')
     video = moviepy.editor.VideoFileClip(path)
     width, height = video.size
     length = int(video.duration)
     loop = enumerate(range(length), start=1)
     for _, moment in loop:
+        head, tail = scope
         if(not (length*head)<moment<(length*tail)): continue
         one = Recognition(video.get_frame(moment))
         two = Recognition(video.get_frame(moment+1))
@@ -94,10 +95,9 @@ def makeFragment(path, head=0, tail=1):
 
 class Detection:
 
-    def __init__(self, folder, head, tail):
+    def __init__(self, folder, scope):
         self.folder = folder
-        self.head = head
-        self.tail = tail
+        self.scope = scope
         return    
     
     def getIteration(self):
@@ -119,9 +119,8 @@ class Detection:
         stop = False if(iteration!=[]) else True
         while(not stop):
             function = functools.partial(
-                makeFragment, 
-                head=self.head, 
-                tail=self.tail
+                makeFragment,
+                scope = self.scope
             )
             pool = multiprocessing.Pool(thread)
             pool.map(function, iteration)

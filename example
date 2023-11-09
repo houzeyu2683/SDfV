@@ -1,0 +1,10 @@
+python download.py \
+    --channel 'youtube' \
+    --link 'https://www.youtube.com/playlist?list=PLiY6wtxjK6QNoT1y7JFt_PEBNCrFI_Vux' \
+    --folder './壹電視新聞/2023年07-09月/' \
+    --thread 8
+
+python extract.py \
+    --folder './壹電視新聞/2023年07-09月/' \
+    --scope 0.01 0.9 \
+    --thread 4
