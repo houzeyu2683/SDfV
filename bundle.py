@@ -15,7 +15,7 @@ for batch in loop:
     for item in iteration:
         unit = item.split('positive')[0].split(batch)[-1].replace('/', "")
         index = os.path.basename(item)
-        path = os.path.join(folder, unit, index)
+        path = os.path.join(folder, f"{unit}_{index}")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         shutil.copy(item, path)
         continue
