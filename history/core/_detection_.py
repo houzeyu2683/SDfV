@@ -44,7 +44,7 @@ class Recognition:
 
 def makeFragment(path, scope):
     print(f'Make [{path}] fragment.')
-    video = moviepy.editor.VideoFileClip(path)
+    video = moviepy.editor.VideoFileClip(path).set_fps(25)
     width, height = video.size
     length = int(video.duration)
     loop = enumerate(range(length), start=1)
@@ -84,8 +84,7 @@ def makeFragment(path, scope):
             f'{tag}.mp4', 
             codec="libx264", 
             logger=None, 
-            temp_audiofile=f'{tag}.wav',
-            fps=25
+            temp_audiofile=f'{tag}.wav'
         )
         shot.save(f'{tag}.jpg')
         continue
