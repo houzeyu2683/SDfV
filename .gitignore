@@ -3,6 +3,7 @@
 *.wav
 *shot.txt
 *moment.txt
+*.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
