@@ -146,6 +146,8 @@ class Fragment:
                 logger=None, 
                 temp_audiofile=f'{folder}/{name}.wav'
             )
+            shot = PIL.Image.fromarray(moment.get_frame(0.0))
+            shot.save(f'{folder}/{name}.jpg')
             continue
         pathlib.Path(os.path.join(folder, 'detection')).touch()
         print(f'Finish to save [{self.path}] detection.')
@@ -177,15 +179,6 @@ if(__name__=='__main__'):
     _ = pool.map(saveExtraction, loop)
     print(f'Finish to capture [{folder}] folder.')
     pass
-    # for path in loop:
-    #     mark = os.path.join(os.path.dirname(path), 'detection')
-    #     if(os.path.isfile(mark)): continue
-    #     extraction = Extraction(path)
-    #     extraction.makeDetection()
-    #     extraction.saveDetection()
-    #     continue
-    # print(f'Finish to capture [{folder}] folder.')
-    # pass
 
 
 

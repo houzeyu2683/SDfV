@@ -4,6 +4,9 @@
 *shot.txt
 *moment.txt
 *.sh
+*detection
+*inventory.txt
+*link.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
