@@ -82,7 +82,7 @@ def saveVideo(link, folder):
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--channel", default='https://www.youtube.com/playlist?list=PLMEWtHFsWmHV1ke3jKWg5mTq0k9PeBfZe', type=str)
+    definition.add_argument("--channel", default=None, type=str)
     definition.add_argument("--core", default=4, type=int)
     argument = definition.parse_args()
     media = Media(channel=argument.channel)
