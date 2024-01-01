@@ -98,7 +98,7 @@ class Fragment:
         length = self.getLength()
         interval = [0, length]
         detection = []
-        print(f'Start to detect [{self.path}] file.')
+        # print(f'Start to detect [{self.path}] file.')
         while(True):
             head = self.getHead(interval)
             tail = self.getTail(interval)
@@ -130,7 +130,7 @@ class Fragment:
         return
 
     def saveDetection(self):
-        print(f'Start to save [{self.path}] detection.')
+        # print(f'Start to save [{self.path}] detection.')
         folder = os.path.dirname(self.path)
         video = self.getVideo()
         for detection in self.detection:
@@ -149,35 +149,59 @@ class Fragment:
             shot = PIL.Image.fromarray(moment.get_frame(0.0))
             shot.save(f'{folder}/{name}.jpg')
             continue
-        pathlib.Path(os.path.join(folder, 'detection')).touch()
+        mark = os.path.join(folder, 'detection')
+        pathlib.Path(mark).touch()
         print(f'Finish to save [{self.path}] detection.')
+        return
+
+    def getStatus(self):
+        folder = os.path.dirname(self.path)
+        mark = os.path.join(folder, 'detection')
+        status = True if(os.path.isfile(mark)) else False
+        return(status)
+
+    pass
+
+class Extraction:
+
+    def __init__(self, folder):
+        self.folder = folder
+        return
+    
+    def makeMoment(self):
+        path = os.path.join(self.folder, '*/video.mp4')
+        moment = glob.glob(path)
+        self.moment = moment
+        return
+
+    def saveMoment(self, core=8):
+        pool = multiprocessing.Pool(core)
+        _ = pool.map(saveMoment, self.moment)
         return
 
     pass
 
-def saveExtraction(path):
-    mark = os.path.join(os.path.dirname(path), 'detection')
-    if(os.path.isfile(mark)): 
+def saveMoment(path):
+    fragment = Fragment(path)
+    status = fragment.getStatus()
+    if(status): 
         print(f'Finish  [{path}] already.')
         return
-    fragment = Fragment(path)
     fragment.makeDetection()
     fragment.saveDetection()
     return
 
-
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
     definition.add_argument("--folder", default='壹電視新聞-2023(7-9月)', type=str)
-    definition.add_argument("--core", default=4, type=int)
+    definition.add_argument("--core", default=8, type=int)
     argument = definition.parse_args()
     folder = argument.folder
     core = argument.core
     print(f'Start to capture [{folder}] folder.')
-    loop = glob.glob(os.path.join(folder, '*/video.mp4'))
-    pool = multiprocessing.Pool(core)
-    _ = pool.map(saveExtraction, loop)
-    print(f'Finish to capture [{folder}] folder.')
+    extraction = Extraction(folder)
+    extraction.makeMoment()
+    extraction.saveMoment(core=core)
     pass
 
 
