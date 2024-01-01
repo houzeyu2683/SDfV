@@ -80,6 +80,9 @@ class Extraction:
         for index, (time, frame) in enumerate(progress):
             if(index==0):
                 history = getBox(frame=frame, boundary=False)
+                if(history==None): 
+                    tail = int(head)
+                    return(tail)
                 continue
             if(index % 4!=0): continue
             future = getBox(frame=frame, boundary=False)
@@ -95,6 +98,7 @@ class Extraction:
         length = self.getLength()
         interval = [0, length]
         detection = []
+        print(f'Start to detect [{self.path}] file.')
         while(True):
             head = self.getHead(interval)
             tail = self.getTail(interval)
@@ -121,10 +125,12 @@ class Extraction:
             if((tail+1)>=length): break
             interval = [tail+1, length]
             continue
+        print(f'Finish to detect [{self.path}] file.')
         self.detection = detection
         return
 
     def saveDetection(self):
+        print(f'Start to save [{self.path}] detection.')
         video = self.getVideo()
         for detection in self.detection:
             head, tail = detection['head'], detection['tail']
@@ -140,132 +146,31 @@ class Extraction:
                 temp_audiofile=f'{folder}/{name}.wav'
             )
             continue
-        pathlib.Path(f'{folder}/detection').touch()
+        folder = os.path.dirname(self.path)
+        pathlib.Path(os.path.join(folder, 'detection')).touch()
+        print(f'Finish to save [{self.path}] detection.')
         return
 
     pass
 
-extraction = Extraction(path='./sample/pFegkQJYOGc/video.mp4')
-extraction.makeDetection()
-
-# interval = [0, extraction.getLength()]
-# extraction.getHead(interval)
-# extraction.getTail(interval)
-
-#     def getDetection(self, scope):
-#         video = self.getVideo().subclip(scope[0], scope[1])
-#         bound, _ = scope
-#         head, tail = None, None
-#         progress = video.iter_frames(with_times=True)
-#         for index, (time, frame) in enumerate(progress):
-#             if(index % 4!=0): continue
-#             box = getBox(frame=frame, boundary=False)
-#             if(box==None): continue
-#             head = time
-#             break
-#         if(head==None): 
-#             detection = None
-#             return(detection)
-#         progress = video.iter_frames(with_times=True)
-#         for index, (time, frame) in enumerate(progress):
-#             if(index % 4!=0): continue
-#             if(time<head): continue
-#             if(time==head): 
-#                 history = getBox(frame=frame, boundary=False)
-#                 continue
-#             future = getBox(frame=frame, boundary=False)
-#             if(future==None):
-#                 scope = [int(time+bound+1), self.getLength()]
-#                 break
-#             error = getError(history, future)
-#             if(error>96): 
-#                 scope = [int(time+bound+1), self.getLength()]
-#                 break
-#             tail = time
-#             continue
-#         if(tail==None): 
-#             detection = None
-#             return(detection)
-#         frame = video.subclip(head, tail).get_frame(0.0)
-#         box = getBox(frame=frame, boundary=True)
-#         if(box==None): 
-#             code = [int(bound+head+1)] + [int(bound+tail)]
-#             pass
-#         else: 
-#             code = [int(bound+head+1)] + [int(bound+tail)] + box
-#             pass
-#         folder = video.filename.replace('video.mp4', '')
-#         name = os.path.basename(os.path.dirname(video.filename))
-#         tag = '_'.join([str(x) for x in code])
-#         path = os.path.join(folder, f'{name}_{tag}.mp4')
-#         detection = {
-#             "head": bound+head,
-#             "tail": bound+tail,
-#             'scope': scope, 
-#             'box': box, 
-#             'path':path
-#         }
-#         return(detection)
-    
-#     def makeFragment(self):
-#         print(f'Load video from [{self.path}].')
-#         fragment = []
-#         scope = [0, self.getLength()]
-#         while(True):
-#             detection = self.getDetection(scope)
-#             if(detection==None): break
-#             scope = detection['scope']
-#             length = int(detection['tail']) - int(detection['head']+1)
-#             box = detection['box']
-#             if(length<1 or box==None): continue
-#             head = round(detection['head'], 2)
-#             tail = round(detection['tail'], 2)
-#             print(f"Make fragment from {head} to {tail} second.")
-#             fragment += [detection]
-#             continue
-#         self.fragment = fragment
-#         return
-
-#     def saveFragment(self):
-#         for detection in self.fragment:
-#             head = int(detection['head']+1)
-#             tail = int(detection['tail'])
-#             box = detection['box']
-#             path = detection['path']
-#             # video = self.getVideo().subclip(head, tail)
-#             video = detection['video']
-#             video = video.subclip(head, tail)
-#             video = video.crop(box[0], box[1], box[2], box[3])
-#             if(os.path.isfile(path)):return
-#             os.makedirs(os.path.dirname(path), exist_ok=True)
-#             video.write_videofile(
-#                 path, 
-#                 codec="libx264", 
-#                 logger=None, 
-#                 temp_audiofile=path.replace(".mp4", '.wav')
-#             )            
-#             print(f"Save fragment to [{path}].")
-#             continue
-#         print(f"Finish fragment from [{self.path}].")
-#         return
-
-#     pass
-
-# if(__name__=='__main__'):
-#     definition = argparse.ArgumentParser()
-#     definition.add_argument("--folder", default='./sample/', type=str)
-#     argument = definition.parse_args()
-#     loop = glob.glob(os.path.join(argument.folder, '*/video.mp4'))
-#     for path in loop:
-#         extraction = Extraction(path=path)
-#         extraction.makeFragment()
-#         extraction.saveFragment()
-#         continue
-#     pathlib.Path(os.path.join(argument.folder, 'Extraction')).touch()
-#     pass
+if(__name__=='__main__'):
+    definition = argparse.ArgumentParser()
+    definition.add_argument("--folder", default='壹電視新聞-2023(7-9月)', type=str)
+    argument = definition.parse_args()
+    folder = argument.folder
+    print(f'Start to capture [{folder}] folder.')
+    loop = glob.glob(os.path.join(folder, '*/video.mp4'))
+    for path in loop:
+        mark = os.path.join(os.path.dirname(path), 'detection')
+        if(os.path.isfile(mark)): continue
+        extraction = Extraction(path)
+        extraction.makeDetection()
+        extraction.saveDetection()
+        continue
+    print(f'Finish to capture [{folder}] folder.')
+    pass
 
 
-# # path = './sample/pFegkQJYOGc/video.mp4'
-# # extraction = Extraction(path)
-# # extraction.makeFragment()
+
+
 
