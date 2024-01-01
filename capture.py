@@ -37,7 +37,7 @@ def getError(history, future):
     error = numpy.absolute(comparison).sum()
     return(error)
 
-class Extraction:
+class Fragment:
 
     def __init__(self, path):
         self.path = path
@@ -111,14 +111,14 @@ class Extraction:
             if(box==None):
                 interval = [tail+1, length]
                 continue
-            folder = os.path.dirname(self.path)
-            tag = os.path.basename(folder)
+            # folder = os.path.dirname(self.path)
+            tag = os.path.basename(os.path.dirname(self.path))
             name = '_'.join([tag, str(head), str(tail)])
             item = {
                 'head': head, 
                 'tail': tail, 
                 'box':box, 
-                'folder': folder,
+                # 'folder': folder,
                 'name': name
             }
             detection += [item]
@@ -131,11 +131,12 @@ class Extraction:
 
     def saveDetection(self):
         print(f'Start to save [{self.path}] detection.')
+        folder = os.path.dirname(self.path)
         video = self.getVideo()
         for detection in self.detection:
             head, tail = detection['head'], detection['tail']
             box = detection['box']
-            folder = detection['folder']
+            # folder = detection['folder']
             name = detection['name']
             moment = video.subclip(head, tail)
             moment = moment.crop(box[0], box[1], box[2], box[3])
@@ -146,29 +147,45 @@ class Extraction:
                 temp_audiofile=f'{folder}/{name}.wav'
             )
             continue
-        folder = os.path.dirname(self.path)
         pathlib.Path(os.path.join(folder, 'detection')).touch()
         print(f'Finish to save [{self.path}] detection.')
         return
 
     pass
 
+def saveExtraction(path):
+    mark = os.path.join(os.path.dirname(path), 'detection')
+    if(os.path.isfile(mark)): 
+        print(f'Finish  [{path}] already.')
+        return
+    fragment = Fragment(path)
+    fragment.makeDetection()
+    fragment.saveDetection()
+    return
+
+
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
     definition.add_argument("--folder", default='壹電視新聞-2023(7-9月)', type=str)
+    definition.add_argument("--core", default=4, type=int)
     argument = definition.parse_args()
     folder = argument.folder
+    core = argument.core
     print(f'Start to capture [{folder}] folder.')
     loop = glob.glob(os.path.join(folder, '*/video.mp4'))
-    for path in loop:
-        mark = os.path.join(os.path.dirname(path), 'detection')
-        if(os.path.isfile(mark)): continue
-        extraction = Extraction(path)
-        extraction.makeDetection()
-        extraction.saveDetection()
-        continue
+    pool = multiprocessing.Pool(core)
+    _ = pool.map(saveExtraction, loop)
     print(f'Finish to capture [{folder}] folder.')
     pass
+    # for path in loop:
+    #     mark = os.path.join(os.path.dirname(path), 'detection')
+    #     if(os.path.isfile(mark)): continue
+    #     extraction = Extraction(path)
+    #     extraction.makeDetection()
+    #     extraction.saveDetection()
+    #     continue
+    # print(f'Finish to capture [{folder}] folder.')
+    # pass
 
 
 

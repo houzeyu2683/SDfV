@@ -7,6 +7,25 @@ import yt_dlp
 import functools
 import argparse
 
+def saveVideo(link, folder):
+    os.makedirs(folder, exist_ok=True)
+    identity = link.split('?')[-1].split('=')[-1].split("&")[0]
+    path = os.path.join(folder, identity, 'video.mp4')
+    finish = os.path.isfile(path)
+    if(finish): return
+    shutil.rmtree(os.path.dirname(path), ignore_errors=True)
+    option = {
+        'quiet': True,
+        'verbose': False,
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=mp4]/mp4',
+        "outtmpl": f'{path}'
+    }
+    process = yt_dlp.YoutubeDL(option)
+    try:_ = process.download(link)
+    except: shutil.rmtree(os.path.dirname(path), ignore_errors=True)
+    process.close()
+    return
+
 class Media:
 
     def __init__(self, channel):
@@ -60,25 +79,6 @@ class Media:
         return
 
     pass
-
-def saveVideo(link, folder):
-    os.makedirs(folder, exist_ok=True)
-    identity = link.split('?')[-1].split('=')[-1].split("&")[0]
-    path = os.path.join(folder, identity, 'video.mp4')
-    finish = os.path.isfile(path)
-    if(finish): return
-    shutil.rmtree(os.path.dirname(path), ignore_errors=True)
-    option = {
-        'quiet': True,
-        'verbose': False,
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=mp4]/mp4',
-        "outtmpl": f'{path}'
-    }
-    process = yt_dlp.YoutubeDL(option)
-    try:_ = process.download(link)
-    except: shutil.rmtree(os.path.dirname(path), ignore_errors=True)
-    process.close()
-    return
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
