@@ -1,11 +1,14 @@
 import logging
 import os
 import glob
+import pathlib
 import moviepy.editor
 import retinaface.RetinaFace
 import tensorflow
 import numpy
+import PIL.Image
 import multiprocessing
+import argparse
 
 def getBox(frame, boundary):
     experiment = tensorflow.config.experimental
@@ -46,7 +49,6 @@ class Fragment:
         return(length)
 
     def makeDetection(self, scope):
-        length = self.getLength()
         head, tail = None, None
         for time, frame in self.video.iter_frames(with_times=True):
             if(not (scope[0]<=time<=scope[1])): continue
@@ -54,6 +56,10 @@ class Fragment:
             if(box==None): continue
             head = time
             break
+        if(head==None): 
+            self.detection = None
+            return
+        length = self.getLength()
         for time, frame in self.video.iter_frames(with_times=True):
             if(time<head): continue
             if(time==head): 
@@ -63,28 +69,26 @@ class Fragment:
             if(future==None):
                 scope = [time, length]
                 break
-            comparison = [h-f for h, f in zip(history, future)]
+            comparison = [abs(h-f) for h, f in zip(history, future)]
             error = numpy.array(comparison).sum()
             if(error>96): 
                 scope = [time, length]
                 break
             tail = time
             continue
-        if(head==None or tail==None): 
-            detection = None
-            self.detection = detection
+        if(tail==None): 
+            self.detection = None
             return
-        print(f"Capture detection from {head} to {tail} time.")
         frame = self.video.subclip(head, tail).get_frame(0.0)
         box = getBox(frame=frame, boundary=True)
-        folder = self.video.filename.replace('video.mp4', '')
-        name = os.path.basename(os.path.dirname(self.video.filename))
         if(box==None): 
-            code = [int(head+1)] + [int(tail)] + [0,0,0,0]
+            code = [int(head+1)] + [int(tail)]
             pass
         else: 
             code = [int(head+1)] + [int(tail)] + box
             pass
+        folder = self.video.filename.replace('video.mp4', '')
+        name = os.path.basename(os.path.dirname(self.video.filename))
         tag = '_'.join([str(x) for x in code])
         path = os.path.join(folder, f'{name}_{tag}.mp4')
         detection = {
@@ -98,11 +102,14 @@ class Fragment:
         return
     
     def saveDetection(self):
-        head, tail = self.detection['head'], self.detection['tail']
-        if((tail-head)<1): return
-        if((tail-head)>3): head, tail = int(head+1), int(tail)
+        head = int(self.detection['head']+1)
+        tail = int(self.detection['tail'])
+        length = tail - head
+        threshold = 1
+        if(length<threshold): return
         box = self.detection['box']
         if(box==None): return
+        print(f"Save {length} second from {head} to {tail}.")
         video = self.video.subclip(head, tail)
         video = video.crop(box[0], box[1], box[2], box[3])
         path = self.detection['path']
@@ -118,7 +125,7 @@ class Fragment:
 
     pass
 
-def saveExtraction(path):
+def executeExtraction(path):
     fragment = Fragment(path)
     fragment.makeVideo()
     length = fragment.getLength()
@@ -129,7 +136,8 @@ def saveExtraction(path):
         scope = fragment.detection['scope']
         fragment.saveDetection()
         continue
-    print(f"Save [{path}]'s extraction.")
+    pathlib.Path(f'{os.path.dirname(path)}/extraction').touch()
+    print(f"Finish [{path}]'s extraction.")
     return
 
 # folder = './sample/'
@@ -140,5 +148,5 @@ def saveExtraction(path):
 # core = 6
 # pool = multiprocessing.Pool(core)
 # pool.map(saveExtraction, loop)
-path = './sample/mF1aMad426U/video.mp4'
-saveExtraction(path)
+path = './sample/pFegkQJYOGc/video.mp4'
+executeExtraction(path)
