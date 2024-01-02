@@ -1,3 +1,3 @@
 python download.py \
-    --channel='https://www.youtube.com/playlist?list=PLp7hnLHxd1KFmDKEV3AMpCrNW21Nz9AVT' \
+    --channel='https://www.youtube.com/playlist?list=PLbyorRThEk_INFz_Tq3bpjZam31lhPvBF' \
     --core='4'
