@@ -1,0 +1,1 @@
+python bundle.py --folder='【數位主播午報】&【數位主播晚報】'

@@ -3,7 +3,6 @@
 *.wav
 *shot.txt
 *moment.txt
-*.sh
 *detection
 *inventory.txt
 *link.txt
