@@ -2,7 +2,7 @@ import os
 import shutil
 import glob
 
-folder = './【數位主播晚報】'
+folder = '壹電視新聞-2023(7-9月)'
 for path in glob.glob(os.path.join(folder, "*/*")):
     if('video.mp4'in path): continue
     if(os.path.isdir(path)):

@@ -90,7 +90,7 @@ class Fragment:
         progress = video.iter_frames(with_times=True)
         for index, (time, frame) in enumerate(progress):
             if(index % 25!=0): continue
-            box = getBox(frame=frame, boundary=False, method=1)
+            box = getBox(frame=frame, boundary=False, method=0)
             if(box==None): continue
             delta = time
             break
@@ -108,13 +108,13 @@ class Fragment:
         progress = video.iter_frames(with_times=True)
         for index, (time, frame) in enumerate(progress):
             if(index==0):
-                history = getBox(frame=frame, boundary=False, method=1)
+                history = getBox(frame=frame, boundary=False, method=0)
                 if(history==None): 
                     tail = int(head)
                     return(tail)
                 continue
             if(index % 4!=0): continue
-            future = getBox(frame=frame, boundary=False, method=1)
+            future = getBox(frame=frame, boundary=False, method=0)
             if(future==None): break
             error = getError(history, future)
             if(error>96): break
@@ -136,7 +136,7 @@ class Fragment:
                 interval = [tail+1, length]
                 continue
             frame = self.getVideo().subclip(head, tail).get_frame(0.0)
-            box = getBox(frame=frame, boundary=True, method=1)
+            box = getBox(frame=frame, boundary=True, method=0)
             if(box==None):
                 interval = [tail+1, length]
                 continue
@@ -222,8 +222,8 @@ def saveMoment(path):
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--folder", default='', type=str)
-    definition.add_argument("--core", default=4, type=int)
+    definition.add_argument("--folder", default='【數位主播晚報】', type=str)
+    definition.add_argument("--core", default=8, type=int)
     argument = definition.parse_args()
     print(f'Start to capture [{argument.folder}] folder.')
     extraction = Extraction(argument.folder)
