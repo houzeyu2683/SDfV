@@ -9,17 +9,33 @@ import numpy
 import PIL.Image
 import multiprocessing
 import argparse
+import facenet_pytorch
+import torch
 
-def getBox(frame, boundary):
-    experiment = tensorflow.config.experimental
-    for item in experiment.list_physical_devices('GPU'):
-        experiment.set_memory_growth(item, True)
-        _ = experiment.list_logical_devices('GPU')
-        continue
-    height, width, _ = frame.shape
-    response = retinaface.RetinaFace.detect_faces(frame)
-    if(len(response)!=1): return 
-    area = response['face_1']['facial_area']
+def getBox(frame, boundary, method):
+    if(method==0):
+        experiment = tensorflow.config.experimental
+        for item in experiment.list_physical_devices('GPU'):
+            experiment.set_memory_growth(item, True)
+            _ = experiment.list_logical_devices('GPU')
+            continue
+        height, width, _ = frame.shape
+        response = retinaface.RetinaFace.detect_faces(frame)
+        if(len(response)!=1): return 
+        area = response['face_1']['facial_area']
+        pass
+    if(method==1):
+        device = 'cuda' if(torch.cuda.is_available()) else 'cpu'
+        model = facenet_pytorch.MTCNN(
+            keep_all=True, 
+            device=device, 
+            post_process=False
+        )
+        height, width, _ = frame.shape
+        area, confidence = model.detect(frame)
+        if(confidence[0]==None or len(confidence)>1): return
+        area = area.astype(int).flatten().tolist()
+        pass
     if(boundary):
         scale = 1.0
         box = [
@@ -61,7 +77,7 @@ class Fragment:
         progress = video.iter_frames(with_times=True)
         for index, (time, frame) in enumerate(progress):
             if(index % 25!=0): continue
-            box = getBox(frame=frame, boundary=False)
+            box = getBox(frame=frame, boundary=False, method=1)
             if(box==None): continue
             delta = time
             break
@@ -79,13 +95,13 @@ class Fragment:
         progress = video.iter_frames(with_times=True)
         for index, (time, frame) in enumerate(progress):
             if(index==0):
-                history = getBox(frame=frame, boundary=False)
+                history = getBox(frame=frame, boundary=False, method=1)
                 if(history==None): 
                     tail = int(head)
                     return(tail)
                 continue
             if(index % 4!=0): continue
-            future = getBox(frame=frame, boundary=False)
+            future = getBox(frame=frame, boundary=False, method=1)
             if(future==None): break
             error = getError(history, future)
             if(error>96): break
@@ -107,7 +123,7 @@ class Fragment:
                 interval = [tail+1, length]
                 continue
             frame = self.getVideo().subclip(head, tail).get_frame(0.0)
-            box = getBox(frame=frame, boundary=True)
+            box = getBox(frame=frame, boundary=True, method=1)
             if(box==None):
                 interval = [tail+1, length]
                 continue
