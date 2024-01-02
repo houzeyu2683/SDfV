@@ -7,6 +7,9 @@
 *detection
 *inventory.txt
 *link.txt
+*train.txt
+*validation.txt
+*test.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

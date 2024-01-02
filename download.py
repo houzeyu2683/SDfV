@@ -82,7 +82,7 @@ class Media:
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--channel", default=None, type=str)
+    definition.add_argument("--channel", default="", type=str)
     definition.add_argument("--core", default=4, type=int)
     argument = definition.parse_args()
     media = Media(channel=argument.channel)

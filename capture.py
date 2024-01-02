@@ -185,7 +185,7 @@ def saveMoment(path):
     fragment = Fragment(path)
     status = fragment.getStatus()
     if(status): 
-        print(f'Finish  [{path}] already.')
+        print(f'Finish [{path}] already.')
         return
     fragment.makeDetection()
     fragment.saveDetection()
@@ -193,15 +193,13 @@ def saveMoment(path):
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--folder", default='壹電視新聞-2023(7-9月)', type=str)
-    definition.add_argument("--core", default=8, type=int)
+    definition.add_argument("--folder", default='', type=str)
+    definition.add_argument("--core", default=4, type=int)
     argument = definition.parse_args()
-    folder = argument.folder
-    core = argument.core
-    print(f'Start to capture [{folder}] folder.')
-    extraction = Extraction(folder)
+    print(f'Start to capture [{argument.folder}] folder.')
+    extraction = Extraction(argument.folder)
     extraction.makeMoment()
-    extraction.saveMoment(core=core)
+    extraction.saveMoment(core=argument.core)
     pass
 
 
