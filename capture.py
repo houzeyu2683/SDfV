@@ -12,6 +12,14 @@ import argparse
 import facenet_pytorch
 import torch
 
+def getAngle(x, y):
+    product = numpy.dot(x, y)
+    u = numpy.linalg.norm(x)
+    v = numpy.linalg.norm(y)
+    theta = numpy.arccos(product / (u * v))
+    angle = numpy.degrees(theta)
+    return(angle)
+
 def getBox(frame, boundary, method):
     if(method==0):
         experiment = tensorflow.config.experimental
@@ -23,6 +31,11 @@ def getBox(frame, boundary, method):
         response = retinaface.RetinaFace.detect_faces(frame)
         if(len(response)!=1): return 
         area = response['face_1']['facial_area']
+        point = response['face_1']["landmarks"]
+        x = numpy.array(point["left_eye"]) - numpy.array(point['nose'])
+        y = numpy.array(point["right_eye"]) - numpy.array(point['nose'])
+        angle = getAngle(x, y)
+        if(angle<60 or angle>100): return
         pass
     if(method==1):
         device = 'cuda' if(torch.cuda.is_available()) else 'cpu'
