@@ -1,11 +1,6 @@
-import selenium.webdriver
-import time
 import os
-import multiprocessing
 import shutil
 import tqdm
-import yt_dlp
-import functools
 import argparse
 import sklearn.model_selection
 import glob
@@ -18,18 +13,31 @@ def writeFile(content, path):
         pass
     return
 
+def getElement(folder):
+    iteration = os.walk(folder, topdown=False)
+    element = []
+    for root, leaf, node in iteration:
+        for name in node:
+            item = os.path.join(root, name)
+            if('video.mp4' in item): continue
+            if('skip' in item): continue
+            target = ('.mp4' in item)
+            if(target): element += [item]
+            continue
+        _ = leaf
+        continue
+    return(element)
+
 class Batch:
 
     def __init__(self):
         return
     
     def makeGroup(self, folder):
-        element = []
+        group = []
         for item in folder:
-            section = os.path.join(item, "*/*.mp4")
-            element += glob.glob(section)
+            group += getElement(item)
             continue
-        group = [e for e in element if('video.mp4' not in e)]
         self.group = group
         return
 
@@ -59,11 +67,10 @@ class Batch:
         writeFile(train, path=os.path.join(folder, 'train.txt'))
         writeFile(validation, path=os.path.join(folder, 'validation.txt'))
         writeFile(test, path=os.path.join(folder, 'test.txt'))
-        print(f"Save in the [{folder}].")
+        print(f"Save group in the [{folder}] folder.")
         return
 
     pass
-
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
@@ -74,3 +81,4 @@ if(__name__=='__main__'):
     batch.makeGroup(folder)
     batch.saveGroup()
     pass
+

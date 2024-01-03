@@ -29,8 +29,59 @@ if conf[0] !=  None:
 #         218.16046142578125]], dtype=object)
         
 import retinaface.RetinaFace
-response = retinaface.RetinaFace.detect_faces(image_facenet)
-response
+import PIL.Image
+import numpy
+import dlib
+frame = numpy.array(PIL.Image.open('./002.png').convert("RGB"))
+response = retinaface.RetinaFace.detect_faces(frame)
+response['face_4']['facial_area']
+response['face_4']['landmarks']['mouth_right'][0] - response['face_4']['landmarks']['mouth_left'][0]
+
+def angle_between_points(point1, point2):
+    import math
+    x1, y1 = point1
+    x2, y2 = point2
+    angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
+    return angle
+
+
+def calculate_angle_between_vectors(u, v):
+    dot_product = np.dot(u, v)
+    magnitude_u = np.linalg.norm(u)
+    magnitude_v = np.linalg.norm(v)
+
+    cos_theta = dot_product / (magnitude_u * magnitude_v)
+
+    # 使用反余弦函数计算角度（弧度）
+    theta_radians = np.arccos(cos_theta)
+
+    # 将弧度转换为角度
+    theta_degrees = np.degrees(theta_radians)
+
+    return theta_degrees
+
+frame = numpy.array(PIL.Image.open('./03.png').convert("RGB"))
+response = retinaface.RetinaFace.detect_faces(frame)
+for item in response:
+    face = response[item]
+    u = np.array(face["landmarks"]["left_eye"]) - np.array(face["landmarks"]['nose'])
+    v = np.array(face["landmarks"]["right_eye"]) - np.array(face["landmarks"]['nose'])
+    angle = calculate_angle_between_vectors(u, v)
+    print(angle)
+    continue
+    # left_eye = (face["landmarks"]["left_eye"][0], face["landmarks"]["left_eye"][1])
+    # right_eye = (face["landmarks"]["right_eye"][0], face["landmarks"]["right_eye"][1])
+    # # 计算两眼之间的角度
+    # angle = angle_between_points(left_eye, right_eye)
+    # print(angle)
+    # # 根据角度判断人脸是正脸还是侧脸
+    # if 30 < angle < 150:
+    #     print("正臉")
+    # else:
+    #     print("側臉")
+
+import numpy as np
+
 
 
 import numpy
@@ -60,3 +111,20 @@ def getBox(frame, boundary, option=0):
         pass
     else: box = area
     return(box)
+
+
+
+
+
+
+
+
+
+import PIL.Image
+import numpy
+import dlib
+frame = numpy.array(PIL.Image.open('./001.png').convert("RGB"))
+frame
+
+predictor_path = "shape_predictor_68_face_landmarks.dat"  # 需要下载
+predictor = dlib.shape_predictor(predictor_path)
