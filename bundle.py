@@ -14,6 +14,7 @@ def writeFile(content, path):
     return
 
 def getElement(folder):
+    wall = glob.glob(os.path.join(folder, "*/*.mp4"))
     iteration = os.walk(folder, topdown=False)
     element = []
     for root, leaf, node in iteration:
@@ -21,6 +22,7 @@ def getElement(folder):
             item = os.path.join(root, name)
             if('video.mp4' in item): continue
             if('skip' in item): continue
+            if(item in wall): continue          
             target = ('.mp4' in item)
             if(target): element += [item]
             continue
@@ -74,7 +76,7 @@ class Batch:
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--folder", default='', type=str)
+    definition.add_argument("--folder", default='【數位主播午報】&【數位主播晚報】&壹電視新聞-2023(7-9月)/A', type=str)
     argument = definition.parse_args()
     folder = argument.folder.split("&")
     batch = Batch()
