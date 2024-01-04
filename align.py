@@ -32,7 +32,7 @@ def savePeriod(path):
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--folder", default='壹電視新聞-2023(7-9月)/A', type=str)
+    definition.add_argument("--folder", default='壹電視新聞-2023(7-9月)/C', type=str)
     argument = definition.parse_args()
     # folder = './【數位主播午報】'
     element = glob.glob(os.path.join(argument.folder, '*/*.mp4'))

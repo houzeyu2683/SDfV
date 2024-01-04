@@ -20,11 +20,13 @@ def getElement(folder):
     for root, leaf, node in iteration:
         for name in node:
             item = os.path.join(root, name)
+            if('mp4' not in item): continue
             if('video.mp4' in item): continue
             if('skip' in item): continue
             if(item in wall): continue          
-            target = ('.mp4' in item)
-            if(target): element += [item]
+            # target = ('.mp4' in item)
+            # if(target): element += [item]
+            element += [item]
             continue
         _ = leaf
         continue
@@ -76,7 +78,7 @@ class Batch:
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--folder", default='【數位主播午報】&【數位主播晚報】&壹電視新聞-2023(7-9月)/A', type=str)
+    definition.add_argument("--folder", default='【數位主播午報】&【數位主播晚報】&壹電視新聞-2023(7-9月)/A&壹電視新聞-2023(7-9月)/B&壹電視新聞-2023(7-9月)/C', type=str)
     argument = definition.parse_args()
     folder = argument.folder.split("&")
     batch = Batch()
