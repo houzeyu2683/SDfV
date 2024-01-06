@@ -7,10 +7,39 @@ import yt_dlp
 import functools
 import argparse
 
+def getLink(channel, view):
+    part = 'https://www.youtube.com/playlist?list='
+    option = selenium.webdriver.ChromeOptions()
+    if(not view): option.add_argument("--headless")
+    window = selenium.webdriver.Chrome(options=option)
+    window.get(f"{part}{channel}")
+    time.sleep(1)
+    height=0
+    while True:
+        script = 'document.documentElement.scrollHeight'
+        window.execute_script(f"window.scrollTo(0, {script});")
+        time.sleep(5)
+        action = window.execute_script(f"return {script}")
+        if(height==action): break
+        height=action
+        continue
+    iteration = []
+    for element in window.find_elements('id', "video-title"):
+        content = element.get_attribute('href')
+        if(content==None): continue
+        head = 'https://www.youtube.com/watch?v='
+        body = content.split('?v=')[-1].split('&')[0]
+        item = f'{head}{body}'
+        iteration += [item]
+        continue
+    window.close()
+    link = iteration    
+    return(link)
+
 def saveVideo(link, folder):
     os.makedirs(folder, exist_ok=True)
-    identity = link.split('?')[-1].split('=')[-1].split("&")[0]
-    path = os.path.join(folder, identity, 'video.mp4')
+    name = link.split('?')[-1].split('=')[-1].split("&")[0]
+    path = os.path.join(folder, name, 'video.mp4')
     finish = os.path.isfile(path)
     if(finish): return
     shutil.rmtree(os.path.dirname(path), ignore_errors=True)
@@ -26,73 +55,50 @@ def saveVideo(link, folder):
     process.close()
     return
 
-class Media:
+class Cloud:
 
-    def __init__(self, channel):
+    def __init__(self, channel, core):
         self.channel = channel
+        self.core = core
         return
 
     def makeLink(self):
-        option = selenium.webdriver.ChromeOptions()
-        #option.add_argument("--headless")
-        web = selenium.webdriver.Chrome(options=option)
-        web.get(self.channel)
-        time.sleep(1)
-        height=0
-        while True:
-            script = 'document.documentElement.scrollHeight'
-            web.execute_script(f"window.scrollTo(0, {script});")
-            time.sleep(5)
-            action = web.execute_script(f"return {script}")
-            if(height==action): break
-            height=action
-            continue
-        iteration = []
-        for element in web.find_elements('id', "video-title"):
-            content = element.get_attribute('href')
-            if(content==None): continue
-            head = 'https://www.youtube.com/watch?v='
-            body = content.split('?v=')[-1].split('&')[0]
-            item = f'{head}{body}'
-            iteration += [item]
-            continue
-        web.close()
-        self.link = iteration
+        link = getLink(self.channel, view=True)
+        self.link = link
         return
     
     def saveLink(self):
-        tag = self.channel.split('=')[-1].split('&')[0]
-        path = os.path.join(os.path.curdir, tag, 'link.txt')
+        # tag = self.channel.split('=')[-1].split('&')[0]
+        path = os.path.join(os.path.curdir, self.channel, 'link.txt')
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        archive = open(f"{path}", 'w')
-        for item in self.link: archive.write(f"{item}\n")
-        archive.close()
+        with open(f"{path}", 'w') as cache:
+            for item in self.link: cache.write(f"{item}\n")
+            pass
+        print(f'Save link to [{path}].')
         return
     
-    def saveVideo(self, core):
-        tag = self.channel.split('=')[-1].split('&')[0]
-        folder = os.path.join(os.path.curdir, tag)
-        folder = '2023壹電視新聞07-09-B/' #
-        pool = multiprocessing.Pool(core)
-        function = functools.partial(saveVideo, folder=folder)
-        # _ = pool.map(function, self.link)
-        with open(f'{folder}/link.txt', 'r') as paper:
-            link = paper.readlines()
-            pass
-        link = [l.replace('\n', '') for l in link]
-        _ = pool.map(function, link)
+    def saveVideo(self):
+        folder = os.path.join(os.path.curdir, self.channel)
+        pool = multiprocessing.Pool(self.core)
+        tunnel = functools.partial(saveVideo, folder=folder)
+        _ = pool.map(tunnel, self.link)
         pool.close()
+        print(f'Save video to [{folder}].')
         return
 
     pass
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--channel", default="https://www.youtube.com/playlist?list=PLiY6wtxjK6QNoT1y7JFt_PEBNCrFI_Vux", type=str)
-    definition.add_argument("--core", default=4, type=int)
+    definition.add_argument(
+        "--channel", 
+        default="PLiY6wtxjK6QNoT1y7JFt_PEBNCrFI_Vux", 
+        type=str
+    )
+    definition.add_argument("--core", default=8, type=int)
     argument = definition.parse_args()
-    media = Media(channel=argument.channel)
-    # media.makeLink()
-    # media.saveLink()
-    media.saveVideo(core=argument.core)
+    cloud = Cloud(argument.channel, argument.core)
+    cloud.makeLink()
+    cloud.saveLink()
+    cloud.saveVideo()
     pass
