@@ -2,5 +2,10 @@
 
 紀錄時間：2023/10/20
 
-文件 download.py 跟 download.sh 基本上沒問題。
+1. download
+2. capture
+3. align
+4. bundle
+
+
 

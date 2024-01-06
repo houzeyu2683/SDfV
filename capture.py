@@ -131,6 +131,7 @@ class Fragment:
             head = self.getHead(interval)
             tail = self.getTail(interval)
             if(head==None or tail==None): break
+            if(head>(length*0.6)): break
             if((tail - head)<1):
                 interval = [tail+1, length]
                 continue

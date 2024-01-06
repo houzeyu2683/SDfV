@@ -34,7 +34,7 @@ class Media:
 
     def makeLink(self):
         option = selenium.webdriver.ChromeOptions()
-        option.add_argument("--headless")
+        #option.add_argument("--headless")
         web = selenium.webdriver.Chrome(options=option)
         web.get(self.channel)
         time.sleep(1)
@@ -42,10 +42,10 @@ class Media:
         while True:
             script = 'document.documentElement.scrollHeight'
             web.execute_script(f"window.scrollTo(0, {script});")
-            time.sleep(0.5)
+            time.sleep(5)
             action = web.execute_script(f"return {script}")
-            if(height==action):break
-            else: height=action
+            if(height==action): break
+            height=action
             continue
         iteration = []
         for element in web.find_elements('id', "video-title"):
@@ -72,9 +72,15 @@ class Media:
     def saveVideo(self, core):
         tag = self.channel.split('=')[-1].split('&')[0]
         folder = os.path.join(os.path.curdir, tag)
+        folder = '2023壹電視新聞07-09-B/' #
         pool = multiprocessing.Pool(core)
         function = functools.partial(saveVideo, folder=folder)
-        _ = pool.map(function, self.link)
+        # _ = pool.map(function, self.link)
+        with open(f'{folder}/link.txt', 'r') as paper:
+            link = paper.readlines()
+            pass
+        link = [l.replace('\n', '') for l in link]
+        _ = pool.map(function, link)
         pool.close()
         return
 
@@ -82,11 +88,11 @@ class Media:
 
 if(__name__=='__main__'):
     definition = argparse.ArgumentParser()
-    definition.add_argument("--channel", default="", type=str)
+    definition.add_argument("--channel", default="https://www.youtube.com/playlist?list=PLiY6wtxjK6QNoT1y7JFt_PEBNCrFI_Vux", type=str)
     definition.add_argument("--core", default=4, type=int)
     argument = definition.parse_args()
     media = Media(channel=argument.channel)
-    media.makeLink()
-    media.saveLink()
+    # media.makeLink()
+    # media.saveLink()
     media.saveVideo(core=argument.core)
     pass

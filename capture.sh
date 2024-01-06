@@ -1,3 +1,3 @@
 python capture.py \
-    --folder='壹電視新聞-2023(7-9月)/C' \
+    --folder='【年代新聞】2023年7.8.9月' \
     --core='6'
